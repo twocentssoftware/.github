@@ -1,6 +1,4 @@
-# <img src="https://twocentsstorage.blob.core.windows.net/threvi-website/assets/TwoCents_Logo_Dark.png" alt="Two Cents Software Logo" /> Two Cents Software
-
-> **Where high-quality software doesn't cost a fortune.**
+Hello! Thank you for checking out our GitHub profile.
 
 ## 🚀 Who We Are
 
@@ -44,9 +42,6 @@ Here you'll find our open-source projects, boilerplates, and code examples to ac
 Whether you're a startup with a revolutionary idea or an established business looking to innovate, we're your partner in digital transformation.
 
 - **Website**: [twocents.software](https://twocents.software)
-- **Email**: hello@twocents.software
-- **LinkedIn**: [Two Cents Software](https://linkedin.com/company/two-cents-software)
-- **Twitter**: [@TwoCentsSoft](https://twitter.com/TwoCentsSoft)
 
 ---
 
