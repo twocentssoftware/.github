@@ -1,4 +1,8 @@
-Hello! Thank you for checking out our GitHub profile.
+# Two Cents Software
+
+> **Where high-quality software doesn't cost a fortune.**
+
+Welcome to Two Cents Software's GitHub profile! We're a lean, efficient development team focused on making enterprise-grade technology accessible to startups and small businesses. Our repositories showcase our approach to building scalable, affordable SaaS solutions and MVPs without compromising on quality or performance. Whether you're looking for boilerplate code to jumpstart your project or seeking inspiration for your next venture, you'll find valuable resources here.
 
 ## 🚀 Who We Are
 
@@ -33,6 +37,17 @@ We select technologies that maximize efficiency without compromising quality—e
 - **Simplicity**: Intuitive, focused, and effective solutions
 - **Empowerment**: Freeing you to focus on business growth
 
+## 🌟 Threvi: Our In-House SaaS
+
+We're proud to showcase Threvi, our flagship in-house SaaS product that demonstrates our capabilities and approach:
+
+- **Built with our own stack**: Experience firsthand what our technology can do
+- **Value-focused design**: See how we balance features, performance, and user experience
+- **Scalable architecture**: Watch how our solutions grow with increasing demands
+- **Continuous improvement**: Witness our commitment to ongoing product excellence
+
+Threvi exemplifies our philosophy that powerful software doesn't require massive investment—just smart design and efficient implementation.
+
 ## 📂 Our Repositories
 
 Here you'll find our open-source projects, boilerplates, and code examples to accelerate your development journey.
@@ -42,6 +57,9 @@ Here you'll find our open-source projects, boilerplates, and code examples to ac
 Whether you're a startup with a revolutionary idea or an established business looking to innovate, we're your partner in digital transformation.
 
 - **Website**: [twocents.software](https://twocents.software)
+- **Email**: hello@twocents.software
+- **LinkedIn**: [Two Cents Software](https://linkedin.com/company/two-cents-software)
+- **Twitter**: [@TwoCentsSoft](https://twitter.com/TwoCentsSoft)
 
 ---
 
