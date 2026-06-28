@@ -8,6 +8,10 @@ name: Reusable Backend CI
 #
 # Compute optimizations:
 #   - NuGet packages are cached per repo (the cache key hashes that repo's own .csproj files).
+#   - The expensive steps (restore, build, test) run only when backend-relevant files changed.
+#     The job ALWAYS runs so the required status check always reports (a skipped required check
+#     deadlocks the PR), but when nothing under `backend-paths` changed it finishes in seconds.
+#     Detection fails SAFE: if the diff base can't be determined, the build/test run anyway.
 #   - Concurrency cancel-in-progress belongs in the CALLER workflow (it is the run that gets
 #     cancelled), so it is intentionally not set here. See the caller template.
 
@@ -26,6 +30,13 @@ on:
         description: Optional `dotnet test --filter` expression. Empty runs the whole suite.
         type: string
         default: ''
+      backend-paths:
+        description: >
+          Space-separated git pathspecs whose changes should trigger the full backend build/test.
+          Must include every file class that influences backend CI (the backend tree, CI workflows,
+          and any shared root files like global.json or Directory.Build.props if the repo has them).
+        type: string
+        default: 'backend/ .github/workflows/'
 
 jobs:
   backend:
@@ -34,13 +45,39 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect backend-relevant changes
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            spec="$base...HEAD"
+          else
+            base="${{ github.event.before }}"
+            spec="$base HEAD"
+          fi
+          # Fail safe: if the base is missing or unreachable, run the full build/test.
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+            echo "Base commit unavailable; running backend build/test to be safe."
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only $spec -- ${{ inputs.backend-paths }} | grep -q .; then
+            echo "Backend-relevant changes detected."
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No backend-relevant changes (${{ inputs.backend-paths }}); skipping build and test."
+            echo "backend=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup .NET
+        if: steps.changes.outputs.backend == 'true'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ inputs.dotnet-version }}
 
       - name: Cache NuGet packages
+        if: steps.changes.outputs.backend == 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -49,14 +86,17 @@ jobs:
             nuget-${{ runner.os }}-
 
       - name: Restore dependencies
+        if: steps.changes.outputs.backend == 'true'
         working-directory: ${{ inputs.working-directory }}
         run: dotnet restore
 
       - name: Build
+        if: steps.changes.outputs.backend == 'true'
         working-directory: ${{ inputs.working-directory }}
         run: dotnet build --no-restore --configuration Release
 
       - name: Run tests
+        if: steps.changes.outputs.backend == 'true'
         working-directory: ${{ inputs.working-directory }}
         run: |
           if [ -n "${{ inputs.test-filter }}" ]; then
