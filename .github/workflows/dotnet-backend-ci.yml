@@ -1,0 +1,66 @@
+name: Reusable Backend CI
+
+# Shared backend CI for twocentssoftware .NET services. Callers pin to a tag (for example @v1)
+# and override only the few inputs that vary. Tests differ per repo and live in each repo; this
+# workflow just runs the generic restore/build/test around them. Test dependencies (Postgres,
+# Redis, Azurite, etc.) are spun up by Testcontainers inside the test process, so no runner-level
+# service containers are needed: ubuntu-latest already has Docker.
+#
+# Compute optimizations:
+#   - NuGet packages are cached per repo (the cache key hashes that repo's own .csproj files).
+#   - Concurrency cancel-in-progress belongs in the CALLER workflow (it is the run that gets
+#     cancelled), so it is intentionally not set here. See the caller template.
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Path to the backend solution root.
+        type: string
+        default: backend
+      dotnet-version:
+        description: .NET SDK version passed to actions/setup-dotnet.
+        type: string
+        default: '10.0.x'
+      test-filter:
+        description: Optional `dotnet test --filter` expression. Empty runs the whole suite.
+        type: string
+        default: ''
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    name: "[BACKEND] Build and Test"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore dependencies
+        working-directory: ${{ inputs.working-directory }}
+        run: dotnet restore
+
+      - name: Build
+        working-directory: ${{ inputs.working-directory }}
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Run tests
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if [ -n "${{ inputs.test-filter }}" ]; then
+            dotnet test --no-build --configuration Release --verbosity normal --filter "${{ inputs.test-filter }}"
+          else
+            dotnet test --no-build --configuration Release --verbosity normal
+          fi
